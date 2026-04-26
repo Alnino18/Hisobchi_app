@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хисобчи - Личный бухгалтер</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="dark">
+    <div id="app" class="min-h-screen bg-slate-900">
+        <!-- Главный экран -->
+        <div id="mainScreen" class="flex flex-col h-screen p-4 pb-20">
+            <!-- Заголовок -->
+            <div class="text-center pt-4 pb-6">
+                <h1 class="text-2xl font-bold text-white">Хисобчи</h1>
+                <p class="text-sm text-slate-400">Личный бухгалтер</p>
+            </div>
+
+            <!-- Карточка баланса -->
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg p-6 mb-6 shadow-lg">
+                <p class="text-blue-200 text-sm mb-2">Текущий баланс</p>
+                <h2 class="text-4xl font-bold text-white mb-2" id="balanceDisplay">0 сўм</h2>
+                <p class="text-blue-200 text-xs">Счёт: 1001</p>
+            </div>
+
+            <!-- Бюджет на месяц -->
+            <div class="bg-slate-800 rounded-lg p-4 mb-6">
+                <div class="flex justify-between mb-2">
+                    <p class="text-sm text-slate-300">Бюджет на месяц</p>
+                    <p class="text-sm font-semibold text-slate-200" id="spentAmount">0 / 5,000,000 сўм</p>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2">
+                    <div id="budgetProgress" class="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- История расходов -->
+            <div class="flex-1 overflow-y-auto">
+                <p class="text-xs text-slate-400 mb-3 font-semibold">ПОСЛЕДНИЕ ОПЕРАЦИИ</p>
+                <div id="transactionsList" class="space-y-2">
+                    <!-- Операции добавляются здесь -->
+                </div>
+            </div>
+
+            <!-- Кнопка добавления -->
+            <button id="addBtn" class="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full shadow-xl flex items-center justify-center text-white text-3xl hover:shadow-2xl transition-shadow">
+                +
+            </button>
+        </div>
+
+        <!-- Форма добавления расхода -->
+        <div id="formScreen" class="hidden flex flex-col h-screen p-4 pb-20">
+            <div class="pt-4 pb-6">
+                <button id="backBtn" class="text-blue-400 text-lg mb-4">← Назад</button>
+                <h2 class="text-2xl font-bold text-white">Новый расход</h2>
+            </div>
+
+            <!-- Форма -->
+            <div class="flex-1">
+                <!-- Сумма -->
+                <div class="mb-6">
+                    <label class="block text-sm text-slate-300 mb-2">Сумма (сўм)</label>
+                    <input type="number" id="amountInput" placeholder="100,000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white placeholder-slate-500 text-lg">
+                </div>
+
+                <!-- Категории -->
+                <div class="mb-6">
+                    <label class="block text-sm text-slate-300 mb-3">Категория</label>
+                    <div class="grid grid-cols-4 gap-3">
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="food" data-icon="🍔">
+                            <div class="text-3xl">🍔</div>
+                            <p class="text-xs text-slate-400 mt-2">Еда</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="transport" data-icon="🚗">
+                            <div class="text-3xl">🚗</div>
+                            <p class="text-xs text-slate-400 mt-2">Транспорт</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="health" data-icon="⚕️">
+                            <div class="text-3xl">⚕️</div>
+                            <p class="text-xs text-slate-400 mt-2">Здоровье</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="entertainment" data-icon="🎮">
+                            <div class="text-3xl">🎮</div>
+                            <p class="text-xs text-slate-400 mt-2">Развлечения</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="shopping" data-icon="🛍️">
+                            <div class="text-3xl">🛍️</div>
+                            <p class="text-xs text-slate-400 mt-2">Шопинг</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="utilities" data-icon="💡">
+                            <div class="text-3xl">💡</div>
+                            <p class="text-xs text-slate-400 mt-2">Коммунальные</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="education" data-icon="📚">
+                            <div class="text-3xl">📚</div>
+                            <p class="text-xs text-slate-400 mt-2">Образование</p>
+                        </button>
+                        <button class="category-btn bg-slate-800 border-2 border-slate-700 rounded-lg p-4 text-center transition-all" data-category="other" data-icon="📌">
+                            <div class="text-3xl">📌</div>
+                            <p class="text-xs text-slate-400 mt-2">Другое</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Описание -->
+                <div class="mb-6">
+                    <label class="block text-sm text-slate-300 mb-2">Описание (опционально)</label>
+                    <input type="text" id="descriptionInput" placeholder="Заметка..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white placeholder-slate-500">
+                </div>
+            </div>
+
+            <!-- Кнопка сохранения -->
+            <button id="saveBtn" class="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold py-3 rounded-lg hover:shadow-lg transition-shadow">
+                Сохранить
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        const mainScreen = document.getElementById('mainScreen');
+        const formScreen = document.getElementById('formScreen');
+        const addBtn = document.getElementById('addBtn');
+        const backBtn = document.getElementById('backBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const amountInput = document.getElementById('amountInput');
+        const descriptionInput = document.getElementById('descriptionInput');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const transactionsList = document.getElementById('transactionsList');
+        const budgetProgress = document.getElementById('budgetProgress');
+        const spentAmount = document.getElementById('spentAmount');
+
+        let selectedCategory = null;
+        let transactions = [];
+        const MONTHLY_BUDGET = 5000000; // 5,000,000 сўм
+
+        // Форматирование денег в UZS
+        function formatUZS(amount) 
+        {
+            return new Intl.NumberFormat('uz-UZ', {
+                style: 'currency',
+                currency: 'UZS',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount).replace(/so'm/g, 'сўм');
+        }
+
+        // Загрузка данных с сервера
+        async function loadTransactions() {
+            try {
+                const response = await fetch('/api/transactions');
+                const data = await response.json();
+                transactions = data.transactions;
+                updateUI();
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+            const balance = -totalSpent;
+
+            balanceDisplay.textContent = formatUZS(balance);
+            
+            const percentage = Math.min((totalSpent / MONTHLY_BUDGET) * 100, 100);
+            budgetProgress.style.width = percentage + '%';
+            spentAmount.textContent = `${formatUZS(totalSpent)} / ${formatUZS(MONTHLY_BUDGET)}`;
+
+            // Список транзакций
+            transactionsList.innerHTML = transactions.slice().reverse().map(t => `
+                <div class="bg-slate-800 rounded-lg p-3 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${t.icon}</span>
+                        <div>
+                            <p class="text-white text-sm font-semibold">${t.description || t.category}</p>
+                            <p class="text-slate-400 text-xs">${new Date(t.date).toLocaleDateString('uz-UZ')}</p>
+                        </div>
+                    </div>
+                    <p class="text-red-400 font-semibold">${formatUZS(t.amount)}</p>
+                </div>
+            `).join('');
+        }
+
+        // Выбор категории
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('border-blue-500'));
+                btn.classList.add('border-2', 'border-blue-500', 'bg-slate-700');
+                selectedCategory = btn.dataset.category;
+                btn.dataset.icon = btn.querySelector('.text-3xl').textContent;
+            });
+        });
+
+        // Открытие формы
+        addBtn.addEventListener('click', () => {
+            mainScreen.classList.add('hidden');
+            formScreen.classList.remove('hidden');
+            selectedCategory = null;
+            amountInput.value = '';
+            descriptionInput.value = '';
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('border-blue-500', 'border-2', 'bg-slate-700'));
+        });
+
+        // Закрытие формы
+        backBtn.addEventListener('click', () => {
+            formScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+        });
+
+        // Сохранение расхода
+        saveBtn.addEventListener('click', async () => {
+            if (!amountInput.value || !selectedCategory) {
+                alert('Заполните сумму и выберите категорию');
+                return;
+            }
+
+            const selectedBtn = document.querySelector(`[data-category="${selectedCategory}"]`);
+            const icon = selectedBtn.querySelector('.text-3xl').textContent;
+
+            const transaction = {
+                amount: parseInt(amountInput.value),
+                category: selectedCategory,
+                description: descriptionInput.value,
+                icon: icon,
+                date: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch('/api/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(transaction)
+                });
+
+                if (response.ok) {
+                    transactions.push(transaction);
+                    updateUI();
+                    formScreen.classList.add('hidden');
+                    mainScreen.classList.remove('hidden');
+                    tg.showAlert('Расход сохранён! ✅');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+                tg.showAlert('Ошибка сохранения');
+            }
+        });
+
+        // Загрузка данных при открытии
+        loadTransactions();
+    </script>
+</body>
+</html>
