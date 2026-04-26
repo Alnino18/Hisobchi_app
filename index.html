@@ -171,6 +171,26 @@
             }
         }
 
+        // Удаление транзакции
+        async function deleteTransaction(transactionId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/transactions/${transactionId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    transactions = transactions.filter(t => t.id !== transactionId);
+                    updateUI();
+                    tg.showAlert('Расход удалён! ✅');
+                } else {
+                    tg.showAlert('Ошибка при удалении');
+                }
+            } catch (error) {
+                console.error('Ошибка удаления:', error);
+                tg.showAlert('Ошибка удаления');
+            }
+        }
+
         // Обновление интерфейса
         function updateUI() {
             const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -183,18 +203,31 @@
             spentAmount.textContent = `${formatUZS(totalSpent)} / ${formatUZS(MONTHLY_BUDGET)}`;
 
             // Список транзакций
-            transactionsList.innerHTML = transactions.slice().reverse().map(t => `
+            transactionsList.innerHTML = transactions.slice().reverse().map((t, idx) => `
                 <div class="bg-slate-800 rounded-lg p-3 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-1">
                         <span class="text-2xl">${t.icon}</span>
                         <div>
                             <p class="text-white text-sm font-semibold">${t.description || t.category}</p>
                             <p class="text-slate-400 text-xs">${new Date(t.date).toLocaleDateString('uz-UZ')}</p>
                         </div>
                     </div>
-                    <p class="text-red-400 font-semibold">${formatUZS(t.amount)}</p>
+                    <div class="flex items-center gap-3">
+                        <p class="text-red-400 font-semibold">${formatUZS(t.amount)}</p>
+                        <button class="delete-btn text-red-500 hover:text-red-400 text-lg transition-colors" data-id="${t.id}">🗑️</button>
+                    </div>
                 </div>
             `).join('');
+            
+            // Добавить обработчик для кнопок удаления
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const transactionId = btn.dataset.id;
+                    if (confirm('Вы уверены, что хотите удалить этот расход?')) {
+                        await deleteTransaction(transactionId);
+                    }
+                });
+            });
         }
 
         // Выбор категории
