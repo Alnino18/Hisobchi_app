@@ -143,7 +143,10 @@
 
         let selectedCategory = null;
         let transactions = [];
-        const MONTHLY_BUDGET = 5000000; // 5,000,000 сўм
+        const MONTHLY_BUDGET = 7500000; // 7,500,000 сўм
+        
+        // API URL - обновите это значение на URL вашего ngrok: https://xxxxx.ngrok.io
+        const API_BASE_URL = 'http://localhost:8000'; // Измените на URL ngrok при развертывании
 
         // Форматирование денег в UZS
         function formatUZS(amount) 
@@ -159,7 +162,7 @@
         // Загрузка данных с сервера
         async function loadTransactions() {
             try {
-                const response = await fetch('/api/transactions');
+                const response = await fetch(`${API_BASE_URL}/api/transactions`);
                 const data = await response.json();
                 transactions = data.transactions;
                 updateUI();
@@ -239,7 +242,7 @@
             };
 
             try {
-                const response = await fetch('/api/transactions', {
+                const response = await fetch(`${API_BASE_URL}/api/transactions`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(transaction)
